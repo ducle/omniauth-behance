@@ -5,6 +5,9 @@ require "rest-client"
 module OmniAuth
   module Strategies
     class Behance < OmniAuth::Strategies::OAuth2
+
+      DEFAULT_STATE = 'state'
+
       option :client_options, {
         site: 'https://www.behance.net',
         authorize_url: 'https://www.behance.net/v2/oauth/authenticate',
@@ -17,6 +20,13 @@ module OmniAuth
 
       def callback_phase
         super
+      end
+
+      def authorize_params
+        super.tap do |params|
+          %w[display state scope].each { |v| params[v.to_sym] = request.params[v] if request.params[v] }
+          params[:state] ||= DEFAULT_STATE
+        end
       end
 
       uid { raw_info['id'].to_s }
